@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carpool Dashboard — GQ Villas Deployment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --border: #252b38;
+      --accent-a: #00e5ff;
+      --accent-b: #7c3aed;
+      --accent-c: #f59e0b;
+      --text: #e8eaf0;
+      --muted: #6b7280;
+      --success: #10b981;
+      --carpool-a: #00e5ff;
+      --carpool-b: #a78bfa;
+      --carpool-c: #fbbf24;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 48px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent-a);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 1px;
+      background: var(--accent-a);
+    }
+
+    h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(22px, 4vw, 38px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    h1 span {
+      color: var(--accent-a);
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid;
+      letter-spacing: 1px;
+    }
+
+    .badge-deployment { border-color: var(--accent-c); color: var(--accent-c); background: rgba(245,158,11,0.08); }
+    .badge-total { border-color: var(--border); color: var(--muted); }
+
+    /* Carpool filter tabs */
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-btn:hover { border-color: var(--accent-a); color: var(--accent-a); }
+    .filter-btn.active { background: var(--accent-a); color: #000; border-color: var(--accent-a); font-weight: 700; }
+    .filter-btn[data-carpool="PQR944 DENNIS"].active { background: var(--carpool-b); border-color: var(--carpool-b); }
+    .filter-btn[data-carpool="NJK6911 ALJON"].active { background: var(--carpool-c); border-color: var(--carpool-c); }
+
+    /* Carpool sections */
+    .carpool-section {
+      margin-bottom: 40px;
+      transition: opacity 0.3s;
+    }
+
+    .carpool-section.hidden { display: none; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .carpool-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .badge-a { background: rgba(0,229,255,0.15); color: var(--carpool-a); border: 1px solid rgba(0,229,255,0.3); }
+    .badge-b { background: rgba(167,139,250,0.15); color: var(--carpool-b); border: 1px solid rgba(167,139,250,0.3); }
+    .badge-c { background: rgba(251,191,36,0.15); color: var(--carpool-c); border: 1px solid rgba(251,191,36,0.3); }
+
+    .section-meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .section-meta strong { color: var(--text); }
+
+    .map-btn {
+      margin-left: auto;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .map-btn-a { border-color: rgba(0,229,255,0.4); color: var(--carpool-a); background: rgba(0,229,255,0.06); }
+    .map-btn-a:hover { background: rgba(0,229,255,0.15); }
+    .map-btn-b { border-color: rgba(167,139,250,0.4); color: var(--carpool-b); background: rgba(167,139,250,0.06); }
+    .map-btn-b:hover { background: rgba(167,139,250,0.15); }
+    .map-btn-c { border-color: rgba(251,191,36,0.4); color: var(--carpool-c); background: rgba(251,191,36,0.06); }
+    .map-btn-c:hover { background: rgba(251,191,36,0.15); }
+
+    /* Passengers grid */
+    .passengers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 12px;
+    }
+
+    .passenger-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: start;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .passenger-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+
+    .card-a::before { background: var(--carpool-a); }
+    .card-b::before { background: var(--carpool-b); }
+    .card-c::before { background: var(--carpool-c); }
+
+    .passenger-card:hover {
+      border-color: var(--surface2);
+      transform: translateY(-2px);
+    }
+
+    .card-a:hover { border-color: rgba(0,229,255,0.25); }
+    .card-b:hover { border-color: rgba(167,139,250,0.25); }
+    .card-c:hover { border-color: rgba(251,191,36,0.25); }
+
+    .passenger-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .passenger-name .asterisk {
+      color: var(--accent-c);
+      font-size: 12px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .info-row .label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      min-width: 44px;
+    }
+
+    .info-row .value { color: var(--text); font-size: 12px; }
+
+    .time-pill {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .time-etd { background: rgba(0,229,255,0.1); color: var(--carpool-a); }
+    .time-eta { background: rgba(16,185,129,0.1); color: var(--success); }
+
+    .card-b .time-etd { background: rgba(167,139,250,0.1); color: var(--carpool-b); }
+    .card-c .time-etd { background: rgba(251,191,36,0.1); color: var(--carpool-c); }
+
+    .pickup-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 11px;
+      transition: color 0.2s;
+      margin-top: 4px;
+    }
+
+    .card-a .pickup-link:hover { color: var(--carpool-a); }
+    .card-b .pickup-link:hover { color: var(--carpool-b); }
+    .card-c .pickup-link:hover { color: var(--carpool-c); }
+
+    .pickup-link svg { flex-shrink: 0; }
+
+    .seq-number {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Map embed modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 900px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: modalIn 0.25s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.96) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .modal-close {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover { color: #fff; border-color: #fff; }
+
+    .modal-body {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .modal-body iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+      display: block;
+    }
+
+    .route-stops {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .stop-chip {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .stop-chip .stop-num {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 10px;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stat-value.cyan { color: var(--carpool-a); }
+    .stat-value.purple { color: var(--carpool-b); }
+    .stat-value.amber { color: var(--carpool-c); }
+
+    .note {
+      font-size: 11px;
+      color: var(--accent-c);
+      font-style: italic;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .passengers-grid { grid-template-columns: 1fr; }
+      .section-header { flex-wrap: wrap; }
+      .map-btn { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-top">
+      <div>
+        <div class="eyebrow">Carpool Management</div>
+        <h1>GQ Villas <span>Deployment</span><br>Route Dashboard</h1>
+        <div class="header-meta">
+          <span class="badge badge-deployment">DEPLOYMENT</span>
+          <span class="badge badge-total">16 PASSENGERS · 3 VEHICLES</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Passengers</div>
+      <div class="stat-value">16</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">DAB 4185 ALBERT</div>
+      <div class="stat-value cyan">6</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">PQR944 DENNIS</div>
+      <div class="stat-value purple">4</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">NJK6911 ALJON</div>
+      <div class="stat-value amber">6</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">ETA at Drop-off</div>
+      <div class="stat-value" style="font-size:18px; padding-top:4px;">12:00 PM</div>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-row">
+    <button class="filter-btn active" data-carpool="ALL" onclick="filterCarpool('ALL', this)">ALL VEHICLES</button>
+    <button class="filter-btn" data-carpool="DAB 4185 ALBERT" onclick="filterCarpool('DAB 4185 ALBERT', this)">DAB 4185 · ALBERT</button>
+    <button class="filter-btn" data-carpool="PQR944 DENNIS" onclick="filterCarpool('PQR944 DENNIS', this)">PQR944 · DENNIS</button>
+    <button class="filter-btn" data-carpool="NJK6911 ALJON" onclick="filterCarpool('NJK6911 ALJON', this)">NJK6911 · ALJON</button>
+  </div>
+
+  <!-- Carpool A: DAB 4185 ALBERT -->
+  <div class="carpool-section" id="section-DAB4185ALBERT">
+    <div class="section-header">
+      <span class="carpool-badge badge-a">DAB 4185 · ALBERT</span>
+      <div class="section-meta"><strong>6</strong> passengers · earliest pickup <strong>8:00 AM</strong></div>
+      <button class="map-btn map-btn-a" onclick="openRouteMap('a')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+        VIEW ROUTE
+      </button>
+    </div>
+    <div class="passengers-grid" id="grid-a"></div>
+  </div>
+
+  <!-- Carpool B: PQR944 DENNIS -->
+  <div class="carpool-section" id="section-PQR944DENNIS">
+    <div class="section-header">
+      <span class="carpool-badge badge-b">PQR944 · DENNIS</span>
+      <div class="section-meta"><strong>4</strong> passengers · pickup <strong>10:00 AM</strong></div>
+      <button class="map-btn map-btn-b" onclick="openRouteMap('b')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+        VIEW ROUTE
+      </button>
+    </div>
+    <div class="passengers-grid" id="grid-b"></div>
+  </div>
+
+  <!-- Carpool C: NJK6911 ALJON -->
+  <div class="carpool-section" id="section-NJK6911ALJON">
+    <div class="section-header">
+      <span class="carpool-badge badge-c">NJK6911 · ALJON</span>
+      <div class="section-meta"><strong>6</strong> passengers · earliest pickup <strong>7:00 AM</strong></div>
+      <button class="map-btn map-btn-c" onclick="openRouteMap('c')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+        VIEW ROUTE
+      </button>
+    </div>
+    <div class="passengers-grid" id="grid-c"></div>
+  </div>
+
+  <p class="note">* Asterisk indicates special routing / pending confirmation.</p>
+</div>
+
+
+
+<script>
+  const data = [
+    // Carpool A: DAB 4185 ALBERT
+    { carpool: "DAB 4185 ALBERT", group: "a", name: "Bongalbal, Ronnel", pickup: "ALFAMART PEDRACIO", etd: "8:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/JYuAydLkZLrUCzCX9" },
+    { carpool: "DAB 4185 ALBERT", group: "a", name: "Wenceslao, Roesel", pickup: "ALFAMART PEDRACIO", etd: "8:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/JYuAydLkZLrUCzCX9" },
+    { carpool: "DAB 4185 ALBERT", group: "a", name: "See, Eliza Kathleen", pickup: "ALFAMART PEDRACIO", etd: "8:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/JYuAydLkZLrUCzCX9" },
+    { carpool: "DAB 4185 ALBERT", group: "a", name: "Zapanta, Andrew", pickup: "7/11 C. LAWIS", etd: "8:15 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/MA616poomovAwJnr5" },
+    { carpool: "DAB 4185 ALBERT", group: "a", name: "Daluping, Aizlely", pickup: "TACH", etd: "8:30 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/2P6yMDyFAUf1Gzvd8" },
+    { carpool: "DAB 4185 ALBERT", group: "a", name: "*Calma, Voughn Emil", pickup: "MCDO CUBAO", etd: "9:30 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/6W6izuWVTtKgTjCo7" },
+    // Carpool B: PQR944 DENNIS
+    { carpool: "PQR944 DENNIS", group: "b", name: "Cruz, Jan Michael Vincent", pickup: "TARLAC DC", etd: "10:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/xBuu9WKJBahx4kRb6" },
+    { carpool: "PQR944 DENNIS", group: "b", name: "Sana, Abegail", pickup: "TARLAC DC", etd: "10:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/xBuu9WKJBahx4kRb6" },
+    { carpool: "PQR944 DENNIS", group: "b", name: "Dancel, Angelic", pickup: "TARLAC DC", etd: "10:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/xBuu9WKJBahx4kRb6" },
+    { carpool: "PQR944 DENNIS", group: "b", name: "Tumbaga, Nicole Louisse", pickup: "TARLAC DC", etd: "10:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/xBuu9WKJBahx4kRb6" },
+    // Carpool C: NJK6911 ALJON
+    { carpool: "NJK6911 ALJON", group: "c", name: "Cutamora, Marc Justin", pickup: "VIA ATHENA, TUY", etd: "7:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/VzDZan8tSQcJQweh8" },
+    { carpool: "NJK6911 ALJON", group: "c", name: "Rollo, Mark Gil", pickup: "VIA ATHENA, TUY", etd: "7:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/VzDZan8tSQcJQweh8" },
+    { carpool: "NJK6911 ALJON", group: "c", name: "Encarnado, Gerik Ivan", pickup: "VISTA TERMINAL EXCHANGE ALABANG", etd: "9:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/yvz4hq61ww2pFZTf8" },
+    { carpool: "NJK6911 ALJON", group: "c", name: "Barcena, Blincent Addam", pickup: "UNCLE JOHN'S YAKAL", etd: "9:45 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/JuS6kv4dm33JxeAB9" },
+    { carpool: "NJK6911 ALJON", group: "c", name: "*Calma, Voughn Emil", pickup: "LRT V. MAPA", etd: "10:15 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/zLM54bXMvALuxSzU6" },
+    { carpool: "NJK6911 ALJON", group: "c", name: "*De Jesus, Edgar Chevy", pickup: "STA RITA EXIT BUS STOP", etd: "11:00 AM", dropoff: "GQ VILLAS, ANGELES, PAMPANGA", eta: "12:00 PM", link: "https://maps.app.goo.gl/tURrdS2RpumNZ1Hw9" },
+  ];
+
+  // Route maps using Google Maps Directions embed
+  // Using waypoints for multi-stop routing
+  const routeMaps = {
+    a: {
+      title: "DAB 4185 · ALBERT — Full Route",
+      url: "https://maps.app.goo.gl/EhK7q5khb42Mm8Ve9",
+      stops: ["ALFAMART PEDRACIO — 8:00 AM", "7/11 C. LAWIS — 8:15 AM", "TACH — 8:30 AM", "MCDO CUBAO — 9:30 AM", "GQ VILLAS, ANGELES — 12:00 PM"]
+    },
+    b: {
+      title: "PQR944 · DENNIS — Full Route",
+      url: "https://maps.app.goo.gl/7i7WES6AxAiaL3TZ6",
+      stops: ["TARLAC DC — 10:00 AM", "GQ VILLAS, ANGELES — 12:00 PM"]
+    },
+    c: {
+      title: "NJK6911 · ALJON — Full Route",
+      url: "https://maps.app.goo.gl/b5HWtd3kt2XVBsyu9",
+      stops: ["VIA ATHENA, TUY — 7:00 AM", "VISTA TERMINAL ALABANG — 9:00 AM", "UNCLE JOHN'S YAKAL — 9:45 AM", "LRT V. MAPA — 10:15 AM", "STA RITA EXIT — 11:00 AM", "GQ VILLAS, ANGELES — 12:00 PM"]
+    }
+  };
+
+  function buildCards() {
+    ['a','b','c'].forEach(group => {
+      const grid = document.getElementById('grid-' + group);
+      const groupData = data.filter(d => d.group === group);
+      // Get unique pickup stops in order
+      const uniquePickups = [];
+      groupData.forEach(d => {
+        if (!uniquePickups.find(u => u.pickup === d.pickup && u.etd === d.etd)) {
+          uniquePickups.push({ pickup: d.pickup, etd: d.etd });
+        }
+      });
+
+      let seqMap = {};
+      uniquePickups.forEach((u, i) => { seqMap[u.pickup + u.etd] = i + 1; });
+
+      grid.innerHTML = groupData.map((p, i) => {
+        const seq = seqMap[p.pickup + p.etd];
+        const hasAsterisk = p.name.startsWith('*');
+        const displayName = hasAsterisk ? p.name.substring(1) : p.name;
+        return `
+          <div class="passenger-card card-${group}">
+            <div>
+              <div class="passenger-name">
+                ${hasAsterisk ? '<span class="asterisk">★ </span>' : ''}${displayName}
+              </div>
+              <div class="info-row">
+                <span class="label">PICKUP</span>
+                <span class="value">${p.pickup}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">ETD</span>
+                <span class="time-pill time-etd">${p.etd}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">ETA</span>
+                <span class="time-pill time-eta">${p.eta}</span>
+              </div>
+              <a class="pickup-link" href="${p.link}" target="_blank" rel="noopener">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                View pickup on Maps
+              </a>
+            </div>
+            <div class="seq-number">${seq}</div>
+          </div>`;
+      }).join('');
+    });
+  }
+
+  function filterCarpool(carpool, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const sections = {
+      'DAB 4185 ALBERT': 'section-DAB4185ALBERT',
+      'PQR944 DENNIS': 'section-PQR944DENNIS',
+      'NJK6911 ALJON': 'section-NJK6911ALJON'
+    };
+
+    if (carpool === 'ALL') {
+      Object.values(sections).forEach(id => document.getElementById(id).classList.remove('hidden'));
+    } else {
+      Object.entries(sections).forEach(([key, id]) => {
+        document.getElementById(id).classList.toggle('hidden', key !== carpool);
+      });
+    }
+  }
+
+  function openRouteMap(group) {
+    const route = routeMaps[group];
+    window.open(route.url, '_blank', 'noopener');
+  }
+
+
+
+  buildCards();
+</script>
+</body>
+</html>
