@@ -495,6 +495,106 @@
       .section-header { flex-wrap: wrap; }
       .map-btn { margin-left: 0; }
     }
+
+    /* Notable Places */
+    .places-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .places-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--success);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .places-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 1px;
+      background: var(--success);
+    }
+
+    .places-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .places-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .place-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      text-decoration: none;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+
+    .place-card:hover {
+      border-color: rgba(16,185,129,0.4);
+      transform: translateY(-2px);
+      background: var(--surface2);
+    }
+
+    .place-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+
+    .place-info { flex: 1; }
+
+    .place-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+
+    .place-type {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--success);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .place-cta {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .place-card:hover .place-cta { color: var(--success); }
   </style>
 </head>
 <body>
@@ -583,7 +683,48 @@
     <div class="passengers-grid" id="grid-c"></div>
   </div>
 
-  <p class="note">* Asterisk indicates special routing / pending confirmation.</p>
+  <p class="note">* Asterisk indicates special routing / multiple stops for this passenger.</p>
+
+  <!-- Notable Places -->
+  <div class="places-section">
+    <div class="places-eyebrow">Notable Places</div>
+    <div class="places-title">Nearby Landmarks</div>
+    <div class="places-grid">
+      <a class="place-card" href="https://maps.app.goo.gl/6rE5M7crQmrsGSmf8" target="_blank" rel="noopener">
+        <div class="place-icon">🍽️</div>
+        <div class="place-info">
+          <div class="place-name">Aling Lucing's</div>
+          <div class="place-type">Iconic Sisig Restaurant</div>
+          <div class="place-cta">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Open in Google Maps
+          </div>
+        </div>
+      </a>
+      <a class="place-card" href="https://maps.app.goo.gl/AC2ircB4MYCHEHNi6" target="_blank" rel="noopener">
+        <div class="place-icon">🥘</div>
+        <div class="place-info">
+          <div class="place-name">Batcha Batchang Karinderia</div>
+          <div class="place-type">Local Carinderia</div>
+          <div class="place-cta">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Open in Google Maps
+          </div>
+        </div>
+      </a>
+      <a class="place-card" href="https://maps.app.goo.gl/zH2LSXLfcsfKuLW6A" target="_blank" rel="noopener">
+        <div class="place-icon">🏠</div>
+        <div class="place-info">
+          <div class="place-name">GQ Villas</div>
+          <div class="place-type">Drop-off Destination</div>
+          <div class="place-cta">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Open in Google Maps
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
 </div>
 
 
